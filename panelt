@@ -1,0 +1,7 @@
+#!/bin/dash
+
+if $(kill -s 0 $(cat /tmp/panel-pid)) ; then
+    kill $(cat /tmp/panel-pid)
+else
+    ~/.config/lemonbar/panel &
+fi

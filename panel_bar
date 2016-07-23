@@ -1,0 +1,78 @@
+#!/bin/dash
+
+. panel_colors
+
+num_mon=$(bspc query -M | wc -l)
+PADDING="  "
+
+while read -r line ; do
+	case $line in
+                C*)
+                        # clock output
+                        clock=" ${line#?} "
+                        ;;
+                D*)
+												# date output
+												date="%{A1:dzen_cal:}  ${line#?} %{A}"
+												;;
+                L*)
+                        # app launcher
+                        appl="%{A:xfce4-appfinder:} ${line#?} %{A}"
+                        ;;
+                P*)
+                        # pavucontrol
+                        pavu="%{A:pavucontrol:}   ${line#?} %{A}"
+                        ;;
+#                E*)
+#                        # sleep button
+#                        slep="%{A:sudo systemctl suspend:}${line#?}  %{A}"
+#                        ;;
+                T*)
+                        # xtitle
+                        title="  ${line#?} "
+                        ;;
+#                K*)
+#                        # xtitle
+#                        title="${line:1} "
+#                        ;;
+								W*)
+												# bspwm internal state
+												wm_infos=""
+												IFS=':'
+												set -- ${line#?}
+												while [ $# -gt 0 ] ; do
+																item=$1
+																name=${item#?}
+																case $item in
+
+																				O*)
+																							 # focused occupied desktop
+																							 wm_infos="${wm_infos}%{F$COLOR_FOCUSED_OCCUPIED_FG}%{B$COLOR_FOCUSED_OCCUPIED_BG}$PADDING$PADDING%{B-}%{F-}"
+																							 ;;
+																				F*)
+																							 # focused free desktop
+																							 wm_infos="${wm_infos}%{F$COLOR_FOCUSED_FREE_FG}%{B$COLOR_FOCUSED_FREE_BG}$PADDING$PADDING%{B-}%{F-}"
+																							 ;;
+																				U*)
+																							 # focused urgent desktop
+																							 wm_infos="${wm_infos}%{F$COLOR_FOCUSED_URGENT_FG}%{B$COLOR_FOCUSED_URGENT_BG}$PADDING$PADDING%{B-}%{F-}"
+																							 ;;
+																				o*)
+																							 # occupied desktop
+																							 wm_infos="${wm_infos}%{F$COLOR_OCCUPIED_FG}%{B$COLOR_OCCUPIED_BG}%{A:bspc desktop -f ${name}:}$PADDING$PADDING%{A}%{B-}%{F-}"
+																							 ;;
+																				f*)
+																							 # free desktop
+																							 wm_infos="${wm_infos}%{F$COLOR_FREE_FG}%{B$COLOR_FREE_BG}%{A:bspc desktop -f ${name}:}$PADDING$PADDING%{A}%{B-}%{F-}"
+																							 ;;
+																				u*)
+																							 # urgent desktop
+																							 wm_infos="${wm_infos}%{F$COLOR_URGENT_FG}%{B$COLOR_URGENT_BG}%{A:bspc desktop -f ${name}:}$PADDING$PADDING%{A}%{B-}%{F-}"
+																							 ;;
+																esac
+																shift
+												done
+												;;
+	esac
+	printf "%s\n" "%{l}${appl}${title}%{c}${wm_infos}%{r}${pavu} ${date}${clock}"
+done

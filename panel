@@ -1,0 +1,72 @@
+#!/bin/sh
+
+PANEL_FIFO=/tmp/panel-fifo
+PANEL_HEIGHT=26
+PANEL_FONT_FAMILY="Hack:size=9"
+ICON_FONT="FontAwesome:size=11"
+ICON_FONT2="icomoon:size=11"
+
+if [ $(pgrep -cx panel) -gt 1 ] ; then
+        printf "%s\n" "The panel is already running." >&2
+        exit 1
+fi
+
+trap 'trap - TERM; kill 0' INT TERM QUIT EXIT
+
+echo $$ > /tmp/panel-pid
+
+[ -e "$PANEL_FIFO" ] && rm "$PANEL_FIFO"
+mkfifo "$PANEL_FIFO"
+
+bspc control --subscribe > "$PANEL_FIFO" &
+
+# title
+xtitle -sf 'T%s' > "$PANEL_FIFO" &
+
+#applauncher
+echo -e 'L\uf0c9' > $PANEL_FIFO &
+
+#clock
+while true; do
+              echo -e 'C\ue94e' $(date +'%I:%M %p')
+            sleep 1
+done > "$PANEL_FIFO" &
+
+#date
+while true; do
+              echo -e 'D\ue953' $(date +'%A, %D')
+            sleep 1
+done > "$PANEL_FIFO" &
+
+#pavucontrol
+echo -e 'P\ue911' > $PANEL_FIFO &
+
+# music
+#while true;
+#do
+#	SONG_NAME=$(mpc current)
+#	if [[ -n $(mpc status | grep paused) ]]
+#	then
+#		echo "R%{A:mpc prev:}%{A}  %{A:mpc play:}%{A}  %{A:mpc next:}%{A} $PADDING$PADDING  $SONG_NAME"
+#	else
+#		echo "R%{A:mpc prev:}%{A}  %{A:mpc pause:}%{A}   %{A:mpc next:}%{A} $PADDING$PADDING  $SONG_NAME"
+#	fi
+#	sleep 1
+#done > $PANEL_FIFO &
+
+#sleep button
+#echo -e 'E\uf186' > $PANEL_FIFO &
+
+#calcultor
+#echo -e 'T\uf1ec' > $PANEL_FIFO &
+
+#screenlock
+#echo -e 'K\uf023' > $PANEL_FIFO &
+
+. panel_colors
+
+compton &
+
+cat "$PANEL_FIFO" | ~/.config/lemonbar/panel_bar | lemonbar -g x$PANEL_HEIGHT -f "$PANEL_FONT_FAMILY" -f "$ICON_FONT" -f "$ICON_FONT2" -F "$COLOR_FOREGROUND" -B "$COLOR_BACKGROUND" -u 2 | dash &
+
+wait

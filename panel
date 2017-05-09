@@ -1,14 +1,14 @@
 #!/bin/sh
 
 PANEL_FIFO=/tmp/panel-fifo
-PANEL_HEIGHT=26
-PANEL_FONT_FAMILY="Hack:size=9"
-ICON_FONT="FontAwesome:size=11"
-ICON_FONT2="icomoon:size=11"
+PANEL_HEIGHT=25
+PANEL_FONT="Hack:size=9"
+PANEL_FONT_ICON="icomoon:size=9"
+PANEL_WM_NAME=bspwm_panel
 
-if [ $(pgrep -cx panel) -gt 1 ] ; then
-        printf "%s\n" "The panel is already running." >&2
-        exit 1
+if xdo id -a "$PANEL_WM_NAME" > /dev/null ; then
+	printf "%s\n" "The panel is already running." >&2
+	exit 1
 fi
 
 trap 'trap - TERM; kill 0' INT TERM QUIT EXIT
@@ -18,55 +18,40 @@ echo $$ > /tmp/panel-pid
 [ -e "$PANEL_FIFO" ] && rm "$PANEL_FIFO"
 mkfifo "$PANEL_FIFO"
 
-bspc control --subscribe > "$PANEL_FIFO" &
+bspc config top_padding $PANEL_HEIGHT
+bspc subscribe report > "$PANEL_FIFO" &
+
 
 # title
 xtitle -sf 'T%s' > "$PANEL_FIFO" &
 
-#applauncher
-echo -e 'L\uf0c9' > $PANEL_FIFO &
+# applauncher icon
+echo -e 'L\ue9bb' > $PANEL_FIFO &
 
-#clock
+# clock
 while true; do
-              echo -e 'C\ue94e' $(date +'%I:%M %p')
+              echo -e 'C\ue94e' $(date +'%I:%M:%S %p')
             sleep 1
 done > "$PANEL_FIFO" &
 
-#date
+# date
 while true; do
-              echo -e 'D\ue953' $(date +'%A, %D')
+              echo -e 'D\ue953' $(date +'%a. %d/%m')
             sleep 1
 done > "$PANEL_FIFO" &
-
-#pavucontrol
-echo -e 'P\ue911' > $PANEL_FIFO &
-
-# music
-#while true;
-#do
-#	SONG_NAME=$(mpc current)
-#	if [[ -n $(mpc status | grep paused) ]]
-#	then
-#		echo "R%{A:mpc prev:}%{A}  %{A:mpc play:}%{A}  %{A:mpc next:}%{A} $PADDING$PADDING  $SONG_NAME"
-#	else
-#		echo "R%{A:mpc prev:}%{A}  %{A:mpc pause:}%{A}   %{A:mpc next:}%{A} $PADDING$PADDING  $SONG_NAME"
-#	fi
-#	sleep 1
-#done > $PANEL_FIFO &
-
-#sleep button
-#echo -e 'E\uf186' > $PANEL_FIFO &
-
-#calcultor
-#echo -e 'T\uf1ec' > $PANEL_FIFO &
-
-#screenlock
-#echo -e 'K\uf023' > $PANEL_FIFO &
 
 . panel_colors
 
-compton &
 
-cat "$PANEL_FIFO" | ~/.config/lemonbar/panel_bar | lemonbar -g x$PANEL_HEIGHT -f "$PANEL_FONT_FAMILY" -f "$ICON_FONT" -f "$ICON_FONT2" -F "$COLOR_FOREGROUND" -B "$COLOR_BACKGROUND" -u 2 | dash &
+panel_bar < "$PANEL_FIFO" | lemonbar -a 32 -n "$PANEL_WM_NAME" -g 1904x$PANEL_HEIGHT+8+2 -f "$PANEL_FONT" -f "$PANEL_FONT_ICON" -F "$COLOR_DEFAULT_FG" -B "$COLOR_DEFAULT_BG" | sh &
+
+wid=$(xdo id -a "$PANEL_WM_NAME")
+tries_left=20
+while [ -z "$wid" -a "$tries_left" -gt 0 ] ; do
+	sleep 0.05
+	wid=$(xdo id -a "$PANEL_WM_NAME")
+	tries_left=$((tries_left - 1))
+done
+[ -n "$wid" ] && xdo above -t "$(xdo id -N Bspwm -n root | sort | head -n 1)" "$wid"
 
 wait

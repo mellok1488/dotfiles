@@ -12,9 +12,9 @@ while read -r line ; do
                         sys="%{F$COLOR_SYS_FG}%{B$COLOR_SYS_BG} ${line#?} %{B-}%{F-}"
                         ;;
                 D*)
-			# date output
-			date="%{A:dzen_cal:}  ${line#?} %{A}"
-			;;
+						# date output
+						date="%{A:dzen_cal:}  ${line#?} %{A}"
+						;;
                 L*)
                         # applauncher
                         appl="%{A:xfce4-appfinder:} ${line#?} %{A}"

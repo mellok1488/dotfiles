@@ -1,7 +1,18 @@
-#!/bin/dash
+#!/bin/sh
 
+winGap=$(bspc config window_gap)
+padValue=$winGap
+[ $winGap -ge 1 ] && padValue=0
+[[ $padValue -le -1 ]] && padValue=$(expr -1 \* $padValue)
+
+# returns success if pid is running
 if $(kill -s 0 $(cat /tmp/panel-pid)) ; then
+    # kill the bar and change top padding.
     kill $(cat /tmp/panel-pid)
+    bspc config top_padding $padValue
 else
+    # There's no panel, enabling
+    bspc config top_padding $(expr $PANEL_HEIGHT + 25 + $padValue)
     ~/.config/lemonbar/panel &
 fi
+

@@ -21,6 +21,7 @@ bspc config presel_feedback_color "#f0bb48"
 bspc rule -a vivaldi desktop='^2'
 bspc rule -a tilda focus=off
 bspc rule -a Termite state=floating
+bspc rule -a xfce4-appfinder state=floating
 bspc rule -a Spacefm state=floating
 bspc rule -a Gedit state=floating
 bspc rule -a Atom state=floating desktop='^3'

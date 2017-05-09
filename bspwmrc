@@ -1,27 +1,33 @@
-#!/bin/bash
+#!/bin/sh
 
-bspc config border_width          0
-bspc config focused_border_color  #000000
-bspc config window_gap            16
+# config
 bspc config focus_follows_pointer true
+bspc config split_ratio          0.52
+#bspc config borderless_monocle   true
+#bspc config gapless_monocle      true
+bspc config top_padding 25
 
-bspc config top_padding 26
-bspc config split_ratio         0.50
-bspc config borderless_monocle  true
-bspc config gapless_monocle     true
+# monitors
+bspc monitor -d $(echo -e '\ue900') $(echo -e '\ueada') $(echo -e '\uea81') $(echo -e '\uea9f') $(echo -e '\uea9d') $(echo -e '\uea98')
 
-bspc monitor -d 1 2 3 4 5
-bspc desktop ^2 -l monocle
+# border
+bspc config border_width        0
+bspc config window_gap          8
+bspc config focused_border_color "#1d1f21"
+bspc config normal_border_color "#a8b0b8"
+bspc config presel_feedback_color "#f0bb48"
 
-bspc rule -a Firefox desktop=^2
+# rule
+bspc rule -a vivaldi desktop='^2'
+bspc rule -a tilda focus=off
+bspc rule -a Termite state=floating
+bspc rule -a Spacefm state=floating
+bspc rule -a Gedit state=floating
+bspc rule -a Atom state=floating desktop='^3'
 bspc rule -a Lxappearance state=floating center=true
 bspc rule -a Nitrogen state=floating center=true
 bspc rule -a mpv state=floating center=true
-bspc rule -a pavucontrol state=floating
 
-xset -dpms && xset s off
-nitrogen --restore
-[ ! -s ~/.config/mpd/pid ] && mpd
-xsetroot -cursor_name left_ptr
+# exec
+compton &
 panel &
-dunst &
